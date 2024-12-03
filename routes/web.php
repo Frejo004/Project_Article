@@ -6,11 +6,12 @@ use App\Http\Controllers\LoginAuth;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', [ArticleController::class, 'index']);
+Route::get('/home', [ArticleController::class, 'index']);
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-Route::get('/login', [AuthController::class, 'login']);
+Route::get('/', [AuthController::class, 'login']);
 Route::post('/login', [LoginAuth::class, 'authenticate']);
 
 Route::get('/sign-up', [AuthController::class, 'signup']);
@@ -18,9 +19,13 @@ Route::post('/sign-up', [AuthController::class, 'sign_up'])->name('sign-up');
 
 
 
-Route::get('/article', [ArticleController::class, 'create']);
-Route::post('/article', [ArticleController::class, 'store']);
+Route::get('/articles/create', [ArticleController::class, 'create']);
+Route::post('/articles/create', [ArticleController::class, 'store']);
 
-Route::get('/show', [ArticleController::class, 'show'])->name('articles.show');
 
-Route::get('/index', [ArticleController::class, 'index'])->name('articles.download');
+Route::get('/article/{id}', [ArticleController::class, 'show'])->name('articles.show');
+
+
+
+
+Route::get('/index/{id}', [ArticleController::class, 'download'])->name('articles.download');
