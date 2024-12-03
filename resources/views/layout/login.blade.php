@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <form method="POST" action="">
+    <form method="POST" action="/login">
         @csrf
         <div class="min-h-screen bg-purple-400 flex justify-center items-center">
             <div

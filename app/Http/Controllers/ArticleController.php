@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,36 +17,33 @@ class ArticleController extends Controller
 
     public function store(Request $request)
     {
+        // vérification des permissions plus tard
+        $user = Auth::user();
+        $request['user_id'] = $user->id;
+
+        // dd($request->all());
         //validation des donnée envoyer par le formulaire
-        $request->validate([
-            'title' => 'required|string|max:15',
-            'image' => 'nullable|image',
-            'content' => 'nullable|string',
-            'file_path' => 'nullable|mimes:pdf|max:2048',
-        ]);
-
-        $filePath = null;
-        if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('articles', 'public');
-        }
-
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('articles/images', 'public');
-        }
-
-
+        $validatedData = $request->validate([
+            '_token' => 'required|string',
+            'title' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'content' => 'required|string',
+            'file_path' => 'nullable|mimes:pdf',
+            'user_id' => 'required|numeric|exists:users,id',
+         ]);
+   
         //une nouvelle enregistrement dans la base de données
+        // dd($validatedData);
         Article::create([
             'title' => $request->title,
-            'image' => $imagePath,
+            'image' => $request->file('image')->store('img', 'public'),
             'content' => $request->content,
-            'file_path' => $filePath,
-            'user_id' => Auth::id(),
+            'file_path' => $request->file_path,
+            'user_id' => $request->user_id,
         ]);
-
-        return redirect()->route('articles.index')->with('success', 'Article ajouté avec succès');
+        return redirect('/home')->with('success', 'Article ajouté avec succès');
     }
+
 
     public function index()
     {
@@ -53,13 +51,17 @@ class ArticleController extends Controller
         return view('articles.index', compact('articles'));
     }
 
-    public function show(Article $article)
+
+    public function show($id)
     {
+        $article = Article::find($id);
         return view('articles.show', compact('article'));
     }
 
-    public function download(Article $article)
+
+    public function download($id)
     {
+        $article = Article::find($id);
         return Storage::download($article->file_path);
     }
 }
